@@ -132,17 +132,17 @@ void PID_Linefollow(int error){
     lsp = lfspeed - PIDvalue;
     rsp = lfspeed + PIDvalue;
 
-    if (lsp > 255) {
-      lsp = 255;
+    if (lsp > 200) {
+      lsp = 200;
     }
-    if (lsp < -255) {
-      lsp = -255;
+    if (lsp < -200) {
+      lsp = -200;
     }
-    if (rsp > 255) {
-      rsp = 255;
+    if (rsp > 200) {
+      rsp = 200;
     }
-    if (rsp < -255) {
-      rsp = -255;
+    if (rsp < -200) {
+      rsp = -200;
     }
     motor_drive(lsp,rsp);
 }
