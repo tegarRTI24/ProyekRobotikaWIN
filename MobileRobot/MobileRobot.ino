@@ -6,6 +6,7 @@
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
 #endif
 
+//waiting pin esp32 to fix pin 
 const int IN1 = 2;    
 const int IN2 = 3;    
 const int IN3 = 4;
@@ -103,12 +104,12 @@ void robot_control(){
   // from 0 to 4000 (for a white line, use readLineWhite() instead)
   position = qtr.readLineBlack(sensorValues);
   error = 2000 - position;
-  while(sensorValues[0]>=980 && sensorValues[1]>=980 && sensorValues[2]>=980 && sensorValues[3]>=980 && sensorValues[4]>=980){ // A case when the line follower leaves the line
+  while(sensorValues[0]>=980 && sensorValues[1]>=980 && sensorValues[2]>=980 && sensorValues[3]>=980 && sensorValues[4]>=980 && sensorValues[5]>=980 && sensorValues[6]>=980 && sensorValues[7]>=980){ // A case when the line follower leaves the line
     if(previousError>0){       //Turn left if the line was to the left before
-      motor_drive(-230,230);
+      motor_drive(-180,180);
     }
     else{
-      motor_drive(230,-230); // Else turn right
+      motor_drive(180,-180); // Else turn right
     }
     position = qtr.readLineBlack(sensorValues);
   }
