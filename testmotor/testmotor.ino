@@ -1,4 +1,4 @@
-#include<L298N.h>
+#include <L298N.h>
 
 const int IN1 = 47;
 const int IN2 = 49;
@@ -7,82 +7,88 @@ const int ENA = 45;
 const int ENB = 46;
 const int IN4 = 53;
 
-#include <QTRSensors.h>
-#define num_sensor 8
+const int encoderLeftA = 39;  // Encoder pin A for left motor
+const int encoderLeftB = 37;  // Encoder pin B for left motor
+const int encoderRightA = 41; // Encoder pin A for right motor
+const int encoderRightB = 44; // Encoder pin B for right motor
 
-int sensorValues[num_sensor]={A0,A1,A2,A3,A4,A5,A6,A7};
+volatile long encoderLeftCount = 0;   // Variable to store left encoder count
+volatile long encoderRightCount = 0;  // Variable to store right encoder count
 
-int speedkuleft = 170;
-int speedkuright = 140;
+float speedkuleft = 130.5;
+float speedkuright = 120;
 
-L298N motor1 (ENA, IN1, IN2); //kiri
-L298N motor2 (ENB, IN3, IN4); //kanan
-int baca[num_sensor];
+L298N motor1(ENA, IN1, IN2); // kiri
+L298N motor2(ENB, IN3, IN4); // kanan
+
 void setup() {
   Serial.begin(9600);
-  
+
+  // Set up encoder pins as input
+  pinMode(encoderLeftA, INPUT);
+  pinMode(encoderLeftB, INPUT);
+  pinMode(encoderRightA, INPUT);
+  pinMode(encoderRightB, INPUT);
+
+  // Attach interrupts for encoder readings
+  attachInterrupt(digitalPinToInterrupt(encoderLeftA), updateEncoderLeft, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(encoderRightA), updateEncoderRight, CHANGE);
 }
 
 void loop() {
-  bacaSensorLine();
-
+  Serial.println(encoderRightCount);
+  delay(100);
+//  // Example: Stop after a certain number of encoder counts
+//  if (encoderLeftCount >= 1000) {
+//    stopp();
+//  }
 }
 
-void bacaSensorLine(){
-  for(int i=0;i<num_sensor;i++){
-    baca[i]=analogRead(sensorValues[i]);
-  }
-  Serial.print("Sensor : ");
-  for(int i=0;i<num_sensor;i++){
-    Serial.print(baca[i]);
-    Serial.print('\t');
-  }
-  Serial.println(" ");
-
-  if((baca[2]<=800) && (baca[3]>=900) && (baca[4]>=900) && (baca[5]<=800)){
-    maju();
-  }
-  if((baca[2]<=800) && (baca[3]<=800) && (baca[4]>=900) && (baca[5]>=900)){
-    kanan();
-  }
-  if((baca[2]>=900) && (baca[3]>=900) && (baca[4]<=800) && (baca[5]<=800)){
-    kiri();
-  }
-  if((baca[2]<=800) && (baca[3]<=800) && (baca[4]<=800) && (baca[5]<=800)){
-    stopp();
+void updateEncoderLeft() {
+  if (digitalRead(encoderLeftA) == digitalRead(encoderLeftB)) {
+    encoderLeftCount++;
+  } else {
+    encoderLeftCount--;
   }
 }
 
+void updateEncoderRight() {
+  if (digitalRead(encoderRightA) == digitalRead(encoderRightB)) {
+    encoderRightCount++;
+  } else {
+    encoderRightCount--;
+  }
+}
 
-void maju(){
+void maju() {
   motor1.forward();
   motor2.forward();
   motor1.setSpeed(speedkuleft);
   motor2.setSpeed(speedkuright);
 }
 
-void mundur(){
+void mundur() {
   motor1.backward();
   motor2.backward();
   motor1.setSpeed(speedkuleft);
   motor2.setSpeed(speedkuright);
 }
 
-void kanan(){
+void kanan() {
   motor1.forward();
   motor2.backward();
   motor1.setSpeed(speedkuleft);
   motor2.setSpeed(speedkuright);
 }
 
-void kiri(){
+void kiri() {
   motor1.backward();
   motor2.forward();
   motor1.setSpeed(speedkuleft);
   motor2.setSpeed(speedkuright);
 }
 
-void stopp(){
+void stopp() {
   motor1.stop();
   motor2.stop();
   motor1.setSpeed(0);
