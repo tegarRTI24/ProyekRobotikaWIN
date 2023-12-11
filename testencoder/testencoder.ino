@@ -34,9 +34,6 @@ const int ENAB = 7;
 const int INA3 = 28; //kiri
 
 Servo sr1,sr2,sr3;
-int sr1 = 8;
-int sr2 = 9;
-int sr3 = 10;
 
 L298N motorkiri (ENB,IN3,IN4); //kiri
 L298N motorkanan (ENA,IN1,IN2); //kanan
@@ -165,6 +162,10 @@ void setup() {
   }
   attachInterrupt(digitalPinToInterrupt(ENCRB), encoderright, RISING);
   attachInterrupt(digitalPinToInterrupt(ENCLB), encoderleft, RISING);
+
+  sr1.attach(8);
+  sr2.attach(9);
+  sr3.attach(10);
 }
 
 void loop() {
@@ -327,8 +328,18 @@ void loop() {
           motorkiri.stop();
           motorkanan.stop();
           delay(2000);
-
-          
+          //servo 1 ambil bola
+          for(float i=0;i<180;i+=2.7){
+            sr1.write(i);
+          }
+          for(float i=0;i<90;i+=0.9){
+            sr2.write(i);
+          }
+          //servo 1 angkat bola
+          for(float i=180;i>0;i+-2.7){
+            sr1.write(i);
+          }
+          delay(1000);
           while (sudut >-35) {
           belokKiri(10, 130);
             if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) {
