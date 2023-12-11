@@ -2,10 +2,17 @@
 
 const int IN1 = 47;
 const int IN2 = 49;
-const int IN3 = 51;
+const int IN4 = 31;
 const int ENA = 45;
-const int ENB = 46;
-const int IN4 = 53;
+const int ENB = 5;
+const int IN3 = 33;
+
+const int INA1 = 24;
+const int INA2 = 26;
+const int INA4 = 30;
+const int ENAA = 6;
+const int ENAB = 7;
+const int INA3 = 28;
 
 const int encoderLeftA = 39;  // Encoder pin A for left motor
 const int encoderLeftB = 37;  // Encoder pin B for left motor
@@ -20,6 +27,9 @@ float speedkuright = 120;
 
 L298N motor1(ENA, IN1, IN2); // kiri
 L298N motor2(ENB, IN3, IN4); // kanan
+
+L298N motor3(ENAA, INA1, INA2); // kiri
+L298N motor4(ENAB, INA3, INA4); // kanan
 
 void setup() {
   Serial.begin(9600);
@@ -36,12 +46,14 @@ void setup() {
 }
 
 void loop() {
-  Serial.println(encoderRightCount);
-  delay(100);
+//  Serial.println(encoderRightCount);
+//  delay(100);
 //  // Example: Stop after a certain number of encoder counts
 //  if (encoderLeftCount >= 1000) {
 //    stopp();
 //  }
+  maju();
+  majuku();
 }
 
 void updateEncoderLeft() {
@@ -67,6 +79,12 @@ void maju() {
   motor2.setSpeed(speedkuright);
 }
 
+void majuku() {
+  motor3.forward();
+  motor4.forward();
+  motor3.setSpeed(100);
+  motor4.setSpeed(100);
+}
 void mundur() {
   motor1.backward();
   motor2.backward();
