@@ -15,25 +15,25 @@ unsigned long debounceDelay1 = 50;
 unsigned long debounceDelay2 = 50;
 unsigned long timeku=0;
 
-#define IN1 47
-#define IN2 49
-#define ENA 45 //kanan
-#define IN3 37 
-#define IN4 35
-#define ENB 5 //kiri
+const int IN4 = 47;
+const int IN3 = 49;
+const int IN1 = 31;
+const int ENA = 4;
+const int ENB = 5;
+const int IN2 = 33;
 #define ENCRA 41
 #define ENCRB 2
 #define ENCLA 39
 #define ENCLB 3
 
-const int INA1 = 24;
-const int INA2 = 26; //kanan
-const int INA4 = 30;
+const int INA1 = 26;
+const int INA2 = 28; //kanan
+const int INA4 = 32;
 const int ENAA = 6;
 const int ENAB = 7;
-const int INA3 = 28; //kiri
+const int INA3 = 30; //kiri
 
-Servo sr1,sr2,sr3;
+Servo s1,s2,s3;
 
 L298N motorkiri (ENB,IN3,IN4); //kiri
 L298N motorkanan (ENA,IN1,IN2); //kanan
@@ -78,15 +78,22 @@ bool awal = true;
 bool turning1 = false;
 bool turning2 = false;
 bool turning3 = false;
+bool turning4 = false;
+bool turning5 = false;
+bool turning6 = false;
 
 bool lurus1 = false, 
     lurus2 = false,
-    lurus3 = false;
+    lurus3 = false,
+    lurus4 = false,
+    lurus5 = false;
 
+bool maju = false,maju1=false;
+
+bool servo = false;
+bool servo2 = false;
+bool motor = false;
 bool mundur = false;
-
-bool maju = false;
-
 int kecepatan_motorKiri;    // Sesuaikan kecepatan sesuai kebutuhan
 int kecepatan_motorKanan;  // Sesuaikan kecepatan sesuai kebutuhan
 int sudut;
@@ -128,6 +135,15 @@ void encoderright() {
 }
 
 void setup() {
+  s1.attach(8);
+  s2.attach(9);
+  s3.attach(10);
+  s1.write(13);
+  delay(15);
+  s2.write(90);
+  delay(15);
+  s3.write(153);
+  delay(15);
   Wire.begin();
   Wire.setClock(400000);
 
@@ -163,35 +179,32 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(ENCRB), encoderright, RISING);
   attachInterrupt(digitalPinToInterrupt(ENCLB), encoderleft, RISING);
 
-  sr1.attach(8);
-  sr2.attach(9);
-  sr3.attach(10);
+  
 }
 
 void loop() {
   if (!dmpReady) return;
-
   if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) {
   // #ifdef OUTPUT_READABLE_YAWPITCHROLL
     if(awal == true){
       mpu.dmpGetQuaternion(&q, fifoBuffer);
       mpu.dmpGetGravity(&gravity, &q);
       mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
-      int kecepatan_motorKiri = 144;
-      int kecepatan_motorKanan = 120;
+      int kecepatan_motorKiri = 170;
+      int kecepatan_motorKanan = 172;
       int sudut = (ypr[0] * 180 / M_PI);
       Serial.print("sudut 0: ");
       Serial.println(sudut);
-      int selisih_kecepatan = sudut * 4;  // Sesuaikan faktor pengganda sesuai kebutuhan
+      int selisih_kecepatan = sudut * 9;  // Sesuaikan faktor pengganda sesuai kebutuhan
       motorkiri.forward();
       motorkanan.forward();
       motorkiri.setSpeed(kecepatan_motorKiri - selisih_kecepatan);
       motorkanan.setSpeed(kecepatan_motorKanan + selisih_kecepatan);
       
     // #endif
-      if((encoder_posright >= 24 && encoder_posright <= 25)){
+      if((encoder_posright >= 21 && encoder_posright <= 22)){
         awal = false;
-        turning1 = true;
+       turning1 = true;
       }
     }
   //===========================================================================================
@@ -199,8 +212,8 @@ void loop() {
       motorkiri.stop();
       motorkanan.stop();
       delay(2000);
-      while (sudut > -63) {
-      belokKiri(10, 120);
+      while (sudut > -67) {
+      belokKiri(10, 170);
         if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) {
           mpu.dmpGetQuaternion(&q, fifoBuffer);
           mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
@@ -223,22 +236,22 @@ void loop() {
             motorkiri.forward();
             motorkanan.forward();
             motorkiri.setSpeed(134);
-            motorkanan.setSpeed(120);
+            motorkanan.setSpeed(137);
         //============================================================
           
-          if(encoder_posright >= 18 && encoder_posright <= 18){
+          if(encoder_posright >= 9 && encoder_posright <= 10){
             // lurus1 = false;
             lurus1 = false;
             turning2 = true;
           }
         }
-  }
+    }
      if(turning2 == true){
         motorkiri.stop();
         motorkanan.stop();
         delay(2000);
-        while (sudut < -15) {
-        belokKanan(120, 10);
+        while (sudut < -16) {
+        belokKanan(140, 10);
           if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) {
             mpu.dmpGetQuaternion(&q, fifoBuffer);
             mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
@@ -260,10 +273,10 @@ void loop() {
           if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) {
             mpu.dmpGetQuaternion(&q, fifoBuffer);
             mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
-            int kecepatan_motorKiri = 132;
-            int kecepatan_motorKanan = 108;
+            int kecepatan_motorKiri = 140;
+            int kecepatan_motorKanan = 147;
             int sudut = (ypr[0] * 180 / M_PI);
-            int selisih_kecepatan = sudut * 3;
+            int selisih_kecepatan = sudut *5;
             Serial.print("sudut belok 1: ");
             Serial.println(sudut);
             motorkiri.forward();
@@ -271,7 +284,7 @@ void loop() {
             motorkiri.setSpeed(kecepatan_motorKiri - selisih_kecepatan);
             motorkanan.setSpeed(kecepatan_motorKanan + selisih_kecepatan);
 
-            if((encoder_posright >= 20 && encoder_posright <= 21)){
+            if((encoder_posright >= 13 && encoder_posright <= 14)){
               lurus2 = false;
               turning3 = true;
             }
@@ -282,8 +295,8 @@ void loop() {
           motorkiri.stop();
           motorkanan.stop();
           delay(2000);
-          while (sudut <70) {
-          belokKanan(130, 10);
+          while (sudut > -64) {
+          belokKiri(10, 180);
             if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) {
               mpu.dmpGetQuaternion(&q, fifoBuffer);
               mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
@@ -297,16 +310,48 @@ void loop() {
           encoder_posleft =0;
           encoder_posright =0;
           delay(2000);
-          turning3 = false;
+          turning3=false;
           mundur=true;
         }
-
-        if(mundur==true){
+        if(mundur==true){                    
+            motorkiri.backward();
+            motorkanan.backward();
+            motorkiri.setSpeed(150);
+            motorkanan.setSpeed(168);          
+            
+            if((encoder_posright >= 18 && encoder_posright <= 18)){
+              motorkiri.stop();
+              motorkanan.stop();
+              delay(2000);
+              mundur = false;
+              servo = true;
+            }
+          
+        }
+        if(servo == true){
+                for(int i=90;i<=135;i+=1){
+                  s2.write(i);
+                  delay(15);
+                }
+                //servo 1 ambil bola
+                for(float i=13;i<=90;i++){
+                  s1.write(i);
+                  delay(15);
+                }
+                //servo 1 angkat bola
+                for(float i=90;i>=13;i--){
+                  s1.write(i);
+                  delay(15);
+                }
+                servo = false;
+                maju1 =true;
+        }
+        if(maju1==true){                    
           if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) {
             mpu.dmpGetQuaternion(&q, fifoBuffer);
             mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
-            int kecepatan_motorKiri = 128;
-            int kecepatan_motorKanan = 104;
+            int kecepatan_motorKiri = 140;
+            int kecepatan_motorKanan = 147;
             int sudut = (ypr[0] * 180 / M_PI);
             int selisih_kecepatan = sudut * 3;
             Serial.print("sudut mundur: ");
@@ -314,12 +359,11 @@ void loop() {
             motorkiri.forward();
             motorkanan.forward();
             motorkiri.setSpeed(kecepatan_motorKiri - selisih_kecepatan);
-            motorkanan.setSpeed(kecepatan_motorKanan + selisih_kecepatan);
-
-            if((encoder_posright >= 2 && encoder_posright <= 3)){
-              mundur = false;
+            motorkanan.setSpeed(kecepatan_motorKanan + selisih_kecepatan);           
+            
+            if((encoder_posright >= 28 && encoder_posright <= 29)){
+              maju1 = false;
               maju = true;
-              
             }
           }
         }
@@ -328,20 +372,31 @@ void loop() {
           motorkiri.stop();
           motorkanan.stop();
           delay(2000);
-          //servo 1 ambil bola
-          for(float i=0;i<180;i+=2.7){
-            sr1.write(i);
+          while (sudut <-4) {
+          belokKiri(10, 180);
+            if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) {
+              mpu.dmpGetQuaternion(&q, fifoBuffer);
+              mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
+              sudut = (ypr[0] * 180 / M_PI);
+              Serial.print("terakhir: ");
+              Serial.println(sudut);
+            }
           }
-          for(float i=0;i<90;i+=0.9){
-            sr2.write(i);
-          }
-          //servo 1 angkat bola
-          for(float i=180;i>0;i+-2.7){
-            sr1.write(i);
-          }
-          delay(1000);
-          while (sudut >-35) {
-          belokKiri(10, 130);
+          motorkiri.stop();
+          motorkanan.stop();
+          
+          encoder_posleft =0;
+          encoder_posright =0;
+          delay(2000);
+          maju=false;
+          turning4=true;
+        }
+     if(turning4 == true){
+          motorkiri.stop();
+          motorkanan.stop();
+          delay(2000);
+          while (sudut >-150) {
+          belokKiri(10, 170);
             if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) {
               mpu.dmpGetQuaternion(&q, fifoBuffer);
               mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
@@ -355,8 +410,80 @@ void loop() {
           encoder_posleft =0;
           encoder_posright =0;
           delay(2000);
-          maju=false;
+          turning4=true;
+          servo2=false;
+     }
+     if(servo2 == true){
+          //servo 2 bukak bola
+          for (int i  = 135; i >= 90; i -= 5) {
+            s2.write(i);
+            delay(15);
+          }
+          delay(2000);
+          for (int i  = 90; i <= 135; i += 5) {
+            s2.write(i);
+            delay(15);
+          }
+          servo2= false;
+          motor=true;
+     }
+     if(motor==true){
+      //motor ngedrop bola
+          motorkiriku.forward();
+          motorkiriku.setSpeed(40);
+          motorkananku.backward();
+          motorkananku.setSpeed(40);
+          delay(2000);
+          motor=false;
+          turning5=true;
+     }
+
+     if(turning5 == true){
+          motorkiri.stop();
+          motorkanan.stop();
+          delay(2000);
+          while (sudut >40) {
+          belokKiri(10, 170);
+            if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) {
+              mpu.dmpGetQuaternion(&q, fifoBuffer);
+              mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
+              sudut = (ypr[0] * 180 / M_PI);
+              Serial.print("terakhir: ");
+              Serial.println(sudut);
+            }
+          }
+          motorkiri.stop();
+          motorkanan.stop();
+          encoder_posleft =0;
+          encoder_posright =0;
+          delay(2000);
+          turning5=false;
+          lurus5=true;
+     }
+     if(lurus5 == true){
+          //=====================================================
+          if (mpu.dmpGetCurrentFIFOPacket(fifoBuffer)) {
+            mpu.dmpGetQuaternion(&q, fifoBuffer);
+            mpu.dmpGetYawPitchRoll(ypr, &q, &gravity);
+            int kecepatan_motorKiri = 140;
+            int kecepatan_motorKanan = 147;
+            int sudut = (ypr[0] * 180 / M_PI);
+            int selisih_kecepatan = sudut *3;
+            Serial.print("sudut belok 1: ");
+            Serial.println(sudut);
+            motorkiri.forward();
+            motorkanan.forward();
+            motorkiri.setSpeed(kecepatan_motorKiri - selisih_kecepatan);
+            motorkanan.setSpeed(kecepatan_motorKanan + selisih_kecepatan);
+
+            if((encoder_posright >= 10 && encoder_posright <= 11)){
+              lurus5 = false;
+              turning6 = true;
+            }
+          }
+        //============================================================
         }
+     
   
   Serial.print(encoder_posleft);
   Serial.print("   ");
